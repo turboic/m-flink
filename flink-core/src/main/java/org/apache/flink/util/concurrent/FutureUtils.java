@@ -895,6 +895,7 @@ public class FutureUtils {
      */
     public static <T> CompletableFuture<T> completedExceptionally(Throwable cause) {
         CompletableFuture<T> result = new CompletableFuture<>();
+        //CompletableFuture设置完成时出现异常
         result.completeExceptionally(cause);
 
         return result;
@@ -910,6 +911,9 @@ public class FutureUtils {
      */
     public static <T> CompletableFuture<T> supplyAsync(
             SupplierWithException<T, ?> supplier, Executor executor) {
+
+        //异步执行
+
         return CompletableFuture.supplyAsync(
                 () -> {
                     try {

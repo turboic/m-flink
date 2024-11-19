@@ -35,6 +35,7 @@ import java.util.function.Predicate;
  * implementation assumes the attempt always start from 1 and will only increase by 1 each time.
  */
 public class AsyncRetryStrategies {
+    //异步重试策略
     public static final NoRetryStrategy NO_RETRY_STRATEGY = new NoRetryStrategy();
 
     /** NoRetryStrategy. */

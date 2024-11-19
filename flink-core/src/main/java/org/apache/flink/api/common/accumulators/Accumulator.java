@@ -35,6 +35,8 @@ import java.io.Serializable;
  *
  * @param <V> Type of values that are added to the accumulator
  * @param <R> Type of the accumulator result as it will be reported to the client
+ *
+ * 累加
  */
 @Public
 public interface Accumulator<V, R extends Serializable> extends Serializable, Cloneable {

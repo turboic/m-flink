@@ -42,6 +42,7 @@ import java.io.Serializable;
  */
 @PublicEvolving
 public interface Evictor<T, W extends Window> extends Serializable {
+    //清理者
 
     /**
      * Optionally evicts elements. Called before windowing function.
@@ -88,6 +89,8 @@ public interface Evictor<T, W extends Window> extends Serializable {
         MetricGroup getMetricGroup();
 
         /** Returns the current watermark time. */
+
+        //返回当前水位线的时间
         long getCurrentWatermark();
     }
 }

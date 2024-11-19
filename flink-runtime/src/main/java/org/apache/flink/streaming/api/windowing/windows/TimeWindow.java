@@ -43,6 +43,7 @@ import java.util.Set;
  */
 @PublicEvolving
 public class TimeWindow extends Window {
+    //时间窗口
 
     private final long start;
     private final long end;
@@ -114,11 +115,13 @@ public class TimeWindow extends Window {
      * after or before the given window.
      */
     public boolean intersects(TimeWindow other) {
+        //内部
         return this.start <= other.end && this.end >= other.start;
     }
 
     /** Returns the minimal window covers both this window and the given window. */
     public TimeWindow cover(TimeWindow other) {
+        //找出最大的
         return new TimeWindow(Math.min(start, other.start), Math.max(end, other.end));
     }
 

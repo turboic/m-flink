@@ -23,6 +23,7 @@ import org.apache.flink.annotation.PublicEvolving;
 /** An accumulator that sums up {@code Integer} values. */
 @PublicEvolving
 public class IntCounter implements SimpleAccumulator<Integer> {
+    //操作类型是Integer
 
     private static final long serialVersionUID = 1L;
 

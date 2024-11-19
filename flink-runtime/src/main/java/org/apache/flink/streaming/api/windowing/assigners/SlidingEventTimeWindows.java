@@ -45,15 +45,18 @@ import java.util.List;
  */
 @PublicEvolving
 public class SlidingEventTimeWindows extends WindowAssigner<Object, TimeWindow> {
+
+    //滑动事件事件窗口
     private static final long serialVersionUID = 1L;
 
-    private final long size;
+    private final long size; // 长度
 
-    private final long slide;
+    private final long slide; // 滑动
 
-    private final long offset;
+    private final long offset; // 偏移量
 
     protected SlidingEventTimeWindows(long size, long slide, long offset) {
+        //可判断offset是负数的情况
         if (Math.abs(offset) >= slide || size <= 0) {
             throw new IllegalArgumentException(
                     "SlidingEventTimeWindows parameters must satisfy "
@@ -65,13 +68,16 @@ public class SlidingEventTimeWindows extends WindowAssigner<Object, TimeWindow> 
         this.offset = offset;
     }
 
+    //元素  、时间戳  、窗口指派上下文
     @Override
     public Collection<TimeWindow> assignWindows(
             Object element, long timestamp, WindowAssignerContext context) {
         if (timestamp > Long.MIN_VALUE) {
+            //size 应该是总数  slide是每个的数量，确认需要多少个窗口
             List<TimeWindow> windows = new ArrayList<>((int) (size / slide));
             long lastStart = TimeWindow.getWindowStartWithOffset(timestamp, offset, slide);
             for (long start = lastStart; start > timestamp - size; start -= slide) {
+                //类加滑动所有窗口事件对象的实例
                 windows.add(new TimeWindow(start, start + size));
             }
             return windows;
@@ -92,6 +98,7 @@ public class SlidingEventTimeWindows extends WindowAssigner<Object, TimeWindow> 
 
     @Override
     public Trigger<Object, TimeWindow> getDefaultTrigger() {
+        //默认触发
         return EventTimeTrigger.create();
     }
 
@@ -137,11 +144,13 @@ public class SlidingEventTimeWindows extends WindowAssigner<Object, TimeWindow> 
 
     @Override
     public TypeSerializer<TimeWindow> getWindowSerializer(ExecutionConfig executionConfig) {
+        //序列化
         return new TimeWindow.Serializer();
     }
 
     @Override
     public boolean isEventTime() {
+        //事件时间
         return true;
     }
 }

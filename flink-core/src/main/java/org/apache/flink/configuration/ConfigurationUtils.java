@@ -619,6 +619,7 @@ public class ConfigurationUtils {
     /** Filter condition for prefix map keys. */
     public static boolean filterPrefixMapKey(String key, String candidate) {
         final String prefixKey = key + ".";
+        //已key.开头的key值
         return candidate.startsWith(prefixKey);
     }
 
@@ -638,10 +639,12 @@ public class ConfigurationUtils {
     }
 
     static boolean removePrefixMap(Map<String, Object> confData, String key) {
+        //过滤出candidate中已key.开头的
         final List<String> prefixKeys =
                 confData.keySet().stream()
                         .filter(candidate -> filterPrefixMapKey(key, candidate))
                         .collect(Collectors.toList());
+        //将map中的key移除
         prefixKeys.forEach(confData::remove);
         return !prefixKeys.isEmpty();
     }

@@ -53,8 +53,8 @@ public interface RestEndpointFactory<T extends RestfulGateway> {
             FatalErrorHandler fatalErrorHandler)
             throws Exception;
 
-    static ExecutionGraphCache createExecutionGraphCache(
-            RestHandlerConfiguration restConfiguration) {
+    static ExecutionGraphCache createExecutionGraphCache(RestHandlerConfiguration restConfiguration) {
+
         return new DefaultExecutionGraphCache(
                 restConfiguration.getTimeout(),
                 Duration.ofMillis(restConfiguration.getRefreshInterval()));

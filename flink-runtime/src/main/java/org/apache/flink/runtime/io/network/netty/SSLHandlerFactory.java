@@ -29,7 +29,7 @@ import static java.util.Objects.requireNonNull;
 /** Creates and configures {@link SslHandler} instances. */
 public class SSLHandlerFactory {
 
-    private final SslContext sslContext;
+    private final SslContext sslContext; //ssl上下文
 
     private final int handshakeTimeoutMs;
 

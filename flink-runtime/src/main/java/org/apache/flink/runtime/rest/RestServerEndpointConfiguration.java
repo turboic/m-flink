@@ -41,6 +41,7 @@ import static java.util.Objects.requireNonNull;
 
 /** A configuration object for {@link RestServerEndpoint}s. */
 public final class RestServerEndpointConfiguration {
+    //RestServerEndpoint的配置对象
 
     private final String restAddress;
 

@@ -48,6 +48,8 @@ public class PekkoRpcSystemLoader implements RpcSystemLoader {
     static final int LOAD_PRIORITY = 0;
 
     /** The name of the pekko dependency jar, bundled with flink-rpc-akka-loader module artifact. */
+
+    //依赖包名称
     private static final String FLINK_RPC_PEKKO_FAT_JAR = "flink-rpc-akka.jar";
 
     static final String HINT_USAGE =
@@ -61,16 +63,23 @@ public class PekkoRpcSystemLoader implements RpcSystemLoader {
     @Override
     public RpcSystem loadRpcSystem(Configuration config) {
         try {
+            //类加载器
             final ClassLoader flinkClassLoader = RpcSystem.class.getClassLoader();
 
+            //临时目录
             final Path tmpDirectory = Paths.get(ConfigurationUtils.parseTempDirectories(config)[0]);
+            //创建临时目录
             Files.createDirectories(FileUtils.getTargetPathIfContainsSymbolicPath(tmpDirectory));
+
+            //创建临时文件，路径拼接
             final Path tempFile =
                     Files.createFile(
                             tmpDirectory.resolve("flink-rpc-akka" + UUID.randomUUID() + ".jar"));
 
+            //读取jar文件
             final InputStream resourceStream =
                     flinkClassLoader.getResourceAsStream(FLINK_RPC_PEKKO_FAT_JAR);
+
             if (resourceStream == null) {
                 throw new RpcLoaderException(
                         String.format(
@@ -80,16 +89,20 @@ public class PekkoRpcSystemLoader implements RpcSystemLoader {
                                 HINT_USAGE));
             }
 
+            //流的方式,进行文件内容复制
             IOUtils.copyBytes(resourceStream, Files.newOutputStream(tempFile));
 
+            //类加载器
             final SubmoduleClassLoader submoduleClassLoader =
                     new SubmoduleClassLoader(
                             new URL[] {tempFile.toUri().toURL()}, flinkClassLoader);
 
+            //清理临时文件
             return new CleanupOnCloseRpcSystem(
                     ServiceLoader.load(RpcSystem.class, submoduleClassLoader).iterator().next(),
                     submoduleClassLoader,
                     tempFile);
+
         } catch (IOException e) {
             throw new RuntimeException("Could not initialize RPC system.", e);
         }

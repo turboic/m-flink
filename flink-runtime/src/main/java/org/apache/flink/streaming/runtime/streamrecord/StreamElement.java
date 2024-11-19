@@ -23,6 +23,7 @@ import org.apache.flink.streaming.api.watermark.Watermark;
 import org.apache.flink.streaming.runtime.watermarkstatus.WatermarkStatus;
 
 /** An element in a data stream. Can be a record, a Watermark, or a RecordAttributes. */
+//流元素
 @Internal
 public abstract class StreamElement {
 
@@ -32,6 +33,7 @@ public abstract class StreamElement {
      * @return True, if this element is a watermark, false otherwise.
      */
     public final boolean isWatermark() {
+        //是水印
         return this instanceof Watermark;
     }
 
@@ -41,6 +43,7 @@ public abstract class StreamElement {
      * @return True, if this element is a watermark status, false otherwise.
      */
     public final boolean isWatermarkStatus() {
+        //是水印状态
         return getClass() == WatermarkStatus.class;
     }
 
@@ -50,6 +53,7 @@ public abstract class StreamElement {
      * @return True, if this element is a record, false otherwise.
      */
     public final boolean isRecord() {
+        //是记录
         return getClass() == StreamRecord.class;
     }
 
@@ -59,6 +63,7 @@ public abstract class StreamElement {
      * @return True, if this element is a latency marker, false otherwise.
      */
     public final boolean isLatencyMarker() {
+        //延迟标识
         return getClass() == LatencyMarker.class;
     }
 
@@ -68,6 +73,7 @@ public abstract class StreamElement {
      * @return True, if this element is record attributes, false otherwise.
      */
     public final boolean isRecordAttributes() {
+        //记录属性
         return getClass() == RecordAttributes.class;
     }
 

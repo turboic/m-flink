@@ -149,12 +149,15 @@ public class ClusterClientJobClientAdapter<ClusterID>
                 (clusterClient -> clusterClient.reportHeartbeat(jobID, expiredTimestamp)));
     }
 
+     //桥接客户端请求
     private static <T> CompletableFuture<T> bridgeClientRequest(
             ClusterClientProvider<?> clusterClientProvider,
             Function<ClusterClient<?>, CompletableFuture<T>> resultRetriever) {
 
+        //客户端
         ClusterClient<?> clusterClient = clusterClientProvider.getClusterClient();
 
+        //结果
         CompletableFuture<T> resultFuture;
         try {
             resultFuture = resultRetriever.apply(clusterClient);

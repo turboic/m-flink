@@ -29,7 +29,7 @@ public interface AutoCloseableAsync extends AutoCloseable {
      *
      * @return Future which is completed once the resource has been closed
      */
-    CompletableFuture<Void> closeAsync();
+    CompletableFuture<Void> closeAsync();// 异步关闭资源
 
     default void close() throws Exception {
         try {

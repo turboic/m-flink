@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Actor which listens to {@link org.apache.pekko.actor.DeadLetter} and responds with a failure if
  * the message was a RPC.
+ * 死信Actor
  */
 public class DeadLettersActor extends AbstractActor {
 

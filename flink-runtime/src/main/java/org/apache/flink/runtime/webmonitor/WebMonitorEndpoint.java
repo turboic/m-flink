@@ -207,11 +207,13 @@ public class WebMonitorEndpoint<T extends RestfulGateway> extends RestServerEndp
         implements LeaderContender, JsonArchivist {
 
     protected final GatewayRetriever<? extends T> leaderRetriever;
-    protected final Configuration clusterConfiguration;
-    protected final RestHandlerConfiguration restConfiguration;
+
+    protected final Configuration clusterConfiguration; // 集群配置
+    protected final RestHandlerConfiguration restConfiguration;  // rest配置
     private final GatewayRetriever<ResourceManagerGateway> resourceManagerRetriever;
     private final TransientBlobService transientBlobService;
-    protected final ScheduledExecutorService executor;
+
+    protected final ScheduledExecutorService executor; // 线程池
 
     private final ExecutionGraphCache executionGraphCache;
     private final CheckpointStatsCache checkpointStatsCache;
@@ -220,11 +222,11 @@ public class WebMonitorEndpoint<T extends RestfulGateway> extends RestServerEndp
 
     private final MetricFetcher metricFetcher;
 
-    private final LeaderElection leaderElection;
+    private final LeaderElection leaderElection;  // leader选举
 
-    private final FatalErrorHandler fatalErrorHandler;
+    private final FatalErrorHandler fatalErrorHandler;  // 故障处理
 
-    private boolean hasWebUI = false;
+    private boolean hasWebUI = false;  // 有webUI的标识
 
     private final Collection<JsonArchivist> archivingHandlers = new ArrayList<>(16);
 
@@ -254,6 +256,7 @@ public class WebMonitorEndpoint<T extends RestfulGateway> extends RestServerEndp
 
         this.checkpointStatsCache =
                 new CheckpointStatsCache(restConfiguration.getCheckpointHistorySize());
+
         this.checkpointStatsSnapshotCache =
                 CacheBuilder.newBuilder()
                         .maximumSize(restConfiguration.getCheckpointCacheSize())

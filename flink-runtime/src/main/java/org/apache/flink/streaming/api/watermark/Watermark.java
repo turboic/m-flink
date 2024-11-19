@@ -41,13 +41,19 @@ import org.apache.flink.streaming.runtime.streamrecord.StreamElement;
 public class Watermark extends StreamElement {
 
     /** The watermark that signifies end-of-event-time. */
+
+    //最大水印
     public static final Watermark MAX_WATERMARK = new Watermark(Long.MAX_VALUE);
     /** The watermark that signifies is used before any actual watermark has been generated. */
+
+    //最小水印
     public static final Watermark UNINITIALIZED = new Watermark(Long.MIN_VALUE);
 
     // ------------------------------------------------------------------------
 
     /** The timestamp of the watermark in milliseconds. */
+
+    //水印时间戳,上面的两个应该是时间戳的范围
     protected final long timestamp;
     /** Creates a new watermark with the given timestamp in milliseconds. */
     public Watermark(long timestamp) {

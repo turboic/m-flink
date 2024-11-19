@@ -48,7 +48,9 @@ import static org.apache.flink.configuration.ConfigurationUtils.convertToPropert
 import static org.apache.flink.configuration.ConfigurationUtils.removePrefixMap;
 import static org.apache.flink.util.Preconditions.checkNotNull;
 
-/** Lightweight configuration object which stores key/value pairs. */
+/**
+ * kv格式的轻量存储对象
+ * Lightweight configuration object which stores key/value pairs. */
 @Public
 public class Configuration extends ExecutionConfig.GlobalJobParameters
         implements IOReadableWritable,
@@ -56,16 +58,16 @@ public class Configuration extends ExecutionConfig.GlobalJobParameters
                 Cloneable,
                 ReadableConfig,
                 WritableConfig {
-
+    //io可读写、序列化、可克隆、读配置、写配置
     private static final long serialVersionUID = 1L;
 
-    private static final byte TYPE_STRING = 0;
-    private static final byte TYPE_INT = 1;
-    private static final byte TYPE_LONG = 2;
-    private static final byte TYPE_BOOLEAN = 3;
-    private static final byte TYPE_FLOAT = 4;
-    private static final byte TYPE_DOUBLE = 5;
-    private static final byte TYPE_BYTES = 6;
+    private static final byte TYPE_STRING = 0;  //字符串
+    private static final byte TYPE_INT = 1;  //int
+    private static final byte TYPE_LONG = 2;  //long
+    private static final byte TYPE_BOOLEAN = 3;  //布尔
+    private static final byte TYPE_FLOAT = 4;  //浮点
+    private static final byte TYPE_DOUBLE = 5;  //双浮点
+    private static final byte TYPE_BYTES = 6;  //字节
 
     /** The log object used for debugging. */
     private static final Logger LOG = LoggerFactory.getLogger(Configuration.class);
@@ -76,7 +78,7 @@ public class Configuration extends ExecutionConfig.GlobalJobParameters
      * <p>NOTE: This map stores the values that are actually used, and does not include any escaping
      * that is required by the standard YAML syntax.
      */
-    protected final HashMap<String, Object> confData;
+    protected final HashMap<String, Object> confData;  //配置数据
 
     // --------------------------------------------------------------------------------------------
 
@@ -91,6 +93,7 @@ public class Configuration extends ExecutionConfig.GlobalJobParameters
      * @param other The configuration to copy the entries from.
      */
     public Configuration(Configuration other) {
+        //初始化  //
         this.confData = new HashMap<>(other.confData);
     }
 
@@ -474,6 +477,7 @@ public class Configuration extends ExecutionConfig.GlobalJobParameters
             throw new NullPointerException("Value must not be null.");
         }
 
+        //多线程修改confData
         synchronized (this.confData) {
             if (canBePrefixMap) {
                 removePrefixMap(this.confData, key);
@@ -502,9 +506,11 @@ public class Configuration extends ExecutionConfig.GlobalJobParameters
             }
             final Map<String, String> valueFromPrefixMap =
                     convertToPropertiesPrefixed(confData, key);
+
             if (valueFromPrefixMap.isEmpty()) {
                 return Optional.empty();
             }
+            //
             return Optional.of(valueFromPrefixMap);
         }
     }

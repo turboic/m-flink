@@ -125,24 +125,24 @@ public class RestClient implements AutoCloseableAsync {
             RestMapperUtils.getFlexibleObjectMapper();
 
     // used to open connections to a rest server endpoint
-    private final Executor executor;
+    private final Executor executor;  // 线程
 
     private final Bootstrap bootstrap;
 
     private final CompletableFuture<Void> terminationFuture;
 
-    private final AtomicBoolean isRunning = new AtomicBoolean(true);
+    private final AtomicBoolean isRunning = new AtomicBoolean(true);//运行标识
 
-    public static final String VERSION_PLACEHOLDER = "{{VERSION}}";
+    public static final String VERSION_PLACEHOLDER = "{{VERSION}}"; //版本
 
-    private final String urlPrefix;
+    private final String urlPrefix;// url前缀
 
     // Used to track unresolved request futures in case they need to be resolved when the client is
     // closed
     private final Collection<CompletableFuture<Channel>> responseChannelFutures =
-            ConcurrentHashMap.newKeySet();
+            ConcurrentHashMap.newKeySet();  // 响应
 
-    private final List<OutboundChannelHandlerFactory> outboundChannelHandlerFactories;
+    private final List<OutboundChannelHandlerFactory> outboundChannelHandlerFactories; //通道
 
     /**
      * Creates a new RestClient for the provided root URL. If the protocol of the URL is "https",
@@ -179,18 +179,20 @@ public class RestClient implements AutoCloseableAsync {
     }
 
     private RestClient(
-            Configuration configuration,
-            Executor executor,
-            String host,
-            int port,
-            SelectStrategyFactory selectStrategyFactory)
+            Configuration configuration, // flink的配置
+            Executor executor, // 线程
+            String host,  // 主机
+            int port, // 端口
+            SelectStrategyFactory selectStrategyFactory) // 选择策略工厂
             throws ConfigurationException {
         Preconditions.checkNotNull(configuration);
         this.executor = Preconditions.checkNotNull(executor);
         this.terminationFuture = new CompletableFuture<>();
         outboundChannelHandlerFactories = new ArrayList<>();
+
         ServiceLoader<OutboundChannelHandlerFactory> loader =
-                ServiceLoader.load(OutboundChannelHandlerFactory.class);
+                ServiceLoader.load(OutboundChannelHandlerFactory.class); // 加载load
+
         final Iterator<OutboundChannelHandlerFactory> factories = loader.iterator();
         while (factories.hasNext()) {
             try {
@@ -204,19 +206,24 @@ public class RestClient implements AutoCloseableAsync {
                 throw e;
             }
         }
+        //排序
         outboundChannelHandlerFactories.sort(
                 Comparator.comparingInt(OutboundChannelHandlerFactory::priority).reversed());
 
         urlPrefix = configuration.get(RestOptions.URL_PREFIX);
+
+        // url前缀
         Preconditions.checkArgument(
                 urlPrefix.startsWith("/") && urlPrefix.endsWith("/"),
                 "urlPrefix must start and end with '/'");
 
         final RestClientConfiguration restConfiguration =
                 RestClientConfiguration.fromConfiguration(configuration);
+
         final SSLHandlerFactory sslHandlerFactory = restConfiguration.getSslHandlerFactory();
+
         ChannelInitializer<SocketChannel> initializer =
-                new ChannelInitializer<SocketChannel>() {
+                new ChannelInitializer<>() {
                     @Override
                     protected void initChannel(SocketChannel socketChannel) {
                         try {
@@ -225,23 +232,22 @@ public class RestClient implements AutoCloseableAsync {
                                 SslHandler nettySSLHandler =
                                         host == null
                                                 ? sslHandlerFactory.createNettySSLHandler(
-                                                        socketChannel.alloc())
+                                                socketChannel.alloc())
                                                 : sslHandlerFactory.createNettySSLHandler(
-                                                        socketChannel.alloc(), host, port);
+                                                socketChannel.alloc(), host, port);
+                                //nettySSLHandler
                                 socketChannel.pipeline().addLast("ssl", nettySSLHandler);
                             }
                             socketChannel
                                     .pipeline()
                                     .addLast(new HttpClientCodec())
-                                    .addLast(
-                                            new HttpObjectAggregator(
-                                                    restConfiguration.getMaxContentLength()));
+                                    .addLast(new HttpObjectAggregator(restConfiguration.getMaxContentLength()));
 
-                            for (OutboundChannelHandlerFactory factory :
-                                    outboundChannelHandlerFactories) {
+                            for (OutboundChannelHandlerFactory factory : outboundChannelHandlerFactories) {
                                 Optional<ChannelHandler> channelHandler =
                                         factory.createHandler(configuration);
                                 if (channelHandler.isPresent()) {
+                                    //添加自定义的channel
                                     socketChannel.pipeline().addLast(channelHandler.get());
                                 }
                             }
@@ -259,6 +265,7 @@ public class RestClient implements AutoCloseableAsync {
                                     .addLast(new ClientHandler());
                         } catch (Throwable t) {
                             t.printStackTrace();
+                            //抛出异常
                             ExceptionUtils.rethrow(t);
                         }
                     }
@@ -267,6 +274,8 @@ public class RestClient implements AutoCloseableAsync {
         // No NioEventLoopGroup constructor available that allows passing nThreads, threadFactory,
         // and selectStrategyFactory without also passing a SelectorProvider, so mimicking its
         // default value seen in other constructors
+
+                //新建netty group
         NioEventLoopGroup group =
                 new NioEventLoopGroup(
                         1,
@@ -277,11 +286,11 @@ public class RestClient implements AutoCloseableAsync {
         bootstrap = new Bootstrap();
         bootstrap
                 .option(
-                        ChannelOption.CONNECT_TIMEOUT_MILLIS,
+                        ChannelOption.CONNECT_TIMEOUT_MILLIS,//连接超时
                         Math.toIntExact(restConfiguration.getConnectionTimeout()))
                 .group(group)
-                .channel(NioSocketChannel.class)
-                .handler(initializer);
+                .channel(NioSocketChannel.class)//channel类型
+                .handler(initializer);//初始channle实例
 
         LOG.debug("Rest client endpoint started.");
     }
@@ -349,10 +358,10 @@ public class RestClient implements AutoCloseableAsync {
     }
 
     public <
-                    M extends MessageHeaders<EmptyRequestBody, P, EmptyMessageParameters>,
-                    P extends ResponseBody>
-            CompletableFuture<P> sendRequest(String targetAddress, int targetPort, M messageHeaders)
-                    throws IOException {
+            M extends MessageHeaders<EmptyRequestBody, P, EmptyMessageParameters>,
+            P extends ResponseBody>
+    CompletableFuture<P> sendRequest(String targetAddress, int targetPort, M messageHeaders)
+            throws IOException {
         return sendRequest(
                 targetAddress,
                 targetPort,
@@ -362,17 +371,17 @@ public class RestClient implements AutoCloseableAsync {
     }
 
     public <
-                    M extends MessageHeaders<R, P, U>,
-                    U extends MessageParameters,
-                    R extends RequestBody,
-                    P extends ResponseBody>
-            CompletableFuture<P> sendRequest(
-                    String targetAddress,
-                    int targetPort,
-                    M messageHeaders,
-                    U messageParameters,
-                    R request)
-                    throws IOException {
+            M extends MessageHeaders<R, P, U>,
+            U extends MessageParameters,
+            R extends RequestBody,
+            P extends ResponseBody>
+    CompletableFuture<P> sendRequest(
+            String targetAddress,
+            int targetPort,
+            M messageHeaders,
+            U messageParameters,
+            R request)
+            throws IOException {
         return sendRequest(
                 targetAddress,
                 targetPort,
@@ -383,18 +392,18 @@ public class RestClient implements AutoCloseableAsync {
     }
 
     public <
-                    M extends MessageHeaders<R, P, U>,
-                    U extends MessageParameters,
-                    R extends RequestBody,
-                    P extends ResponseBody>
-            CompletableFuture<P> sendRequest(
-                    String targetAddress,
-                    int targetPort,
-                    M messageHeaders,
-                    U messageParameters,
-                    R request,
-                    Collection<FileUpload> fileUploads)
-                    throws IOException {
+            M extends MessageHeaders<R, P, U>,
+            U extends MessageParameters,
+            R extends RequestBody,
+            P extends ResponseBody>
+    CompletableFuture<P> sendRequest(
+            String targetAddress,
+            int targetPort,
+            M messageHeaders,
+            U messageParameters,
+            R request,
+            Collection<FileUpload> fileUploads)
+            throws IOException {
         Collection<? extends RestAPIVersion> supportedAPIVersions =
                 messageHeaders.getSupportedAPIVersions();
         return sendRequest(
@@ -408,19 +417,19 @@ public class RestClient implements AutoCloseableAsync {
     }
 
     public <
-                    M extends MessageHeaders<R, P, U>,
-                    U extends MessageParameters,
-                    R extends RequestBody,
-                    P extends ResponseBody>
-            CompletableFuture<P> sendRequest(
-                    String targetAddress,
-                    int targetPort,
-                    M messageHeaders,
-                    U messageParameters,
-                    R request,
-                    Collection<FileUpload> fileUploads,
-                    RestAPIVersion<? extends RestAPIVersion<?>> apiVersion)
-                    throws IOException {
+            M extends MessageHeaders<R, P, U>,
+            U extends MessageParameters,
+            R extends RequestBody,
+            P extends ResponseBody>
+    CompletableFuture<P> sendRequest(
+            String targetAddress,
+            int targetPort,
+            M messageHeaders,
+            U messageParameters,
+            R request,
+            Collection<FileUpload> fileUploads,
+            RestAPIVersion<? extends RestAPIVersion<?>> apiVersion)
+            throws IOException {
         Preconditions.checkNotNull(targetAddress);
         Preconditions.checkArgument(
                 NetUtils.isValidHostPort(targetPort),
@@ -716,8 +725,10 @@ public class RestClient implements AutoCloseableAsync {
 
         @Override
         protected void channelRead0(ChannelHandlerContext ctx, Object msg) {
+            //接收响应处理
             if (msg instanceof HttpResponse
                     && ((HttpResponse) msg).status().equals(REQUEST_ENTITY_TOO_LARGE)) {
+                //响应实体信息太大
                 jsonFuture.completeExceptionally(
                         new RestClientException(
                                 String.format(
@@ -725,6 +736,7 @@ public class RestClient implements AutoCloseableAsync {
                                         RestOptions.CLIENT_MAX_CONTENT_LENGTH.key()),
                                 ((HttpResponse) msg).status()));
             } else if (msg instanceof FullHttpResponse) {
+                //读取响应
                 readRawResponse((FullHttpResponse) msg);
             } else {
                 LOG.error(
@@ -735,6 +747,7 @@ public class RestClient implements AutoCloseableAsync {
                                     "Implementation error: Received a response that wasn't a FullHttpResponse.",
                                     ((HttpResponse) msg).status()));
                 } else {
+                    //内部服务错误
                     jsonFuture.completeExceptionally(
                             new RestClientException(
                                     "Implementation error: Received a response that wasn't a FullHttpResponse.",
@@ -777,7 +790,7 @@ public class RestClient implements AutoCloseableAsync {
         }
 
         private void readRawResponse(FullHttpResponse msg) {
-            ByteBuf content = msg.content();
+            ByteBuf content = msg.content();//内容
 
             JsonNode rawResponse;
             try (InputStream in = new ByteBufInputStream(content)) {

@@ -24,7 +24,7 @@ import org.apache.flink.streaming.api.windowing.windows.Window;
 
 /**
  * A trigger that can turn any {@link Trigger} into a purging {@code Trigger}.
- *
+ * 触发清除
  * <p>When the nested trigger fires, this will return a {@code FIRE_AND_PURGE} {@link
  * TriggerResult}.
  *

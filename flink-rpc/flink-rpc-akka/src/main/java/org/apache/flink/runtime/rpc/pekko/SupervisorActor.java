@@ -51,6 +51,7 @@ import scala.PartialFunction;
 import scala.collection.Iterable;
 
 /**
+ * 监督
  * Supervisor actor which is responsible for starting {@link PekkoRpcActor} instances and monitoring
  * when the actors have terminated.
  */

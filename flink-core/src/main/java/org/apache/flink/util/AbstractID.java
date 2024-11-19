@@ -36,10 +36,10 @@ public class AbstractID implements Comparable<AbstractID>, java.io.Serializable 
 
     // ------------------------------------------------------------------------
 
-    /** The upper part of the actual ID. */
+    /**大写部分 The upper part of the actual ID. */
     protected final long upperPart;
 
-    /** The lower part of the actual ID. */
+    /**小写部分 The lower part of the actual ID. */
     protected final long lowerPart;
 
     /** The memoized value returned by toString(). */

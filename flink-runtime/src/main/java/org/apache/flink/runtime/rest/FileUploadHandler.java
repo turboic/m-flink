@@ -71,24 +71,34 @@ public class FileUploadHandler extends SimpleChannelInboundHandler<HttpObject> {
 
     private static final Logger LOG = LoggerFactory.getLogger(FileUploadHandler.class);
 
-    public static final String HTTP_ATTRIBUTE_REQUEST = "request";
+    public static final String HTTP_ATTRIBUTE_REQUEST = "request"; // http请求属性
 
     private static final AttributeKey<FileUploads> UPLOADED_FILES =
             AttributeKey.valueOf("UPLOADED_FILES");
 
+    // 数据工厂
     private static final HttpDataFactory DATA_FACTORY = new DefaultHttpDataFactory(true);
 
+    // 上传路径
     private final Path uploadDir;
 
+    // 路由
     private final MultipartRoutes multipartRoutes;
 
+    // 请求解码
     private HttpPostRequestDecoder currentHttpPostRequestDecoder;
 
+    // 当前请求
     private HttpRequest currentHttpRequest;
+
+    // 当前请求的json的有效荷载
     private byte[] currentJsonPayload;
+
+    // 当前上传路径
     private Path currentUploadDir;
 
     public FileUploadHandler(final Path uploadDir, final MultipartRoutes multipartRoutes) {
+        // 自动释放
         super(true);
 
         // the clean up of temp files when jvm exits is handled by
@@ -96,7 +106,7 @@ public class FileUploadHandler extends SimpleChannelInboundHandler<HttpObject> {
         // it's no need to register those files (post chunks and upload file chunks) to
         // java.io.DeleteOnExitHook
         // which may lead to memory leak.
-        DiskAttribute.deleteOnExitTemporaryFile = false;
+        DiskAttribute.deleteOnExitTemporaryFile = false;  // 删除已经存在的临时文件
         DiskFileUpload.deleteOnExitTemporaryFile = false;
 
         DiskFileUpload.baseDirectory = uploadDir.normalize().toAbsolutePath().toString();
@@ -117,12 +127,18 @@ public class FileUploadHandler extends SimpleChannelInboundHandler<HttpObject> {
                         "Received request. URL:{} Method:{}",
                         httpRequest.uri(),
                         httpRequest.method());
+
+                // post请求
                 if (httpRequest.method().equals(HttpMethod.POST)) {
                     if (HttpPostRequestDecoder.isMultipart(httpRequest)) {
                         LOG.trace("Initializing multipart file upload.");
+
                         checkState(currentHttpPostRequestDecoder == null);
                         checkState(currentHttpRequest == null);
                         checkState(currentUploadDir == null);
+
+                        //上面的三个值必须是空值
+
                         currentHttpPostRequestDecoder =
                                 new HttpPostRequestDecoder(DATA_FACTORY, httpRequest);
                         currentHttpRequest = ReferenceCountUtil.retain(httpRequest);
@@ -130,6 +146,7 @@ public class FileUploadHandler extends SimpleChannelInboundHandler<HttpObject> {
                         // We check this after initializing the multipart file upload in order for
                         // handleError to work correctly.
                         if (!multipartRoutes.isPostRoute(httpRequest.uri())) {
+                            //如果不是post请求上传文件
                             LOG.trace("POST request not allowed for {}.", httpRequest.uri());
                             handleError(
                                     ctx,
@@ -141,6 +158,8 @@ public class FileUploadHandler extends SimpleChannelInboundHandler<HttpObject> {
 
                         // make sure that we still have a upload dir in case that it got deleted in
                         // the meanwhile
+
+                        //使用了 RestServerEndpoint
                         RestServerEndpoint.createUploadDir(uploadDir, LOG, false);
 
                         currentUploadDir =
@@ -150,10 +169,12 @@ public class FileUploadHandler extends SimpleChannelInboundHandler<HttpObject> {
                         ctx.fireChannelRead(ReferenceCountUtil.retain(msg));
                     }
                 } else {
+                    // 非POST
                     ctx.fireChannelRead(ReferenceCountUtil.retain(msg));
                 }
             } else if (msg instanceof HttpContent && currentHttpPostRequestDecoder != null) {
                 LOG.trace("Received http content.");
+                // 内容
                 // make sure that we still have a upload dir in case that it got deleted in the
                 // meanwhile
                 RestServerEndpoint.createUploadDir(uploadDir, LOG, false);
@@ -207,7 +228,7 @@ public class FileUploadHandler extends SimpleChannelInboundHandler<HttpObject> {
                         }
                     }
                 }
-
+                // LastHttpContent
                 if (httpContent instanceof LastHttpContent) {
                     LOG.trace("Finalizing multipart file upload.");
                     ctx.channel().attr(UPLOADED_FILES).set(new FileUploads(currentUploadDir));

@@ -33,6 +33,7 @@ public class EventTimeTrigger extends Trigger<Object, TimeWindow> {
 
     private EventTimeTrigger() {}
 
+    //element元素   timestamp 当前的时间戳
     @Override
     public TriggerResult onElement(
             Object element, long timestamp, TimeWindow window, TriggerContext ctx)
@@ -42,6 +43,7 @@ public class EventTimeTrigger extends Trigger<Object, TimeWindow> {
             return TriggerResult.FIRE;
         } else {
             ctx.registerEventTimeTimer(window.maxTimestamp());
+            //TriggerContext记录时间用于比较
             return TriggerResult.CONTINUE;
         }
     }

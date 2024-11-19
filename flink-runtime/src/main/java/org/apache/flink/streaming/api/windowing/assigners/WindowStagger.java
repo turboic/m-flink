@@ -27,6 +27,7 @@ import java.util.concurrent.ThreadLocalRandom;
 @PublicEvolving
 public enum WindowStagger {
     /** Default mode, all panes fire at the same time across all partitions. */
+    //一致排列
     ALIGNED {
         @Override
         public long getStaggerOffset(final long currentProcessingTime, final long size) {
@@ -37,6 +38,7 @@ public enum WindowStagger {
     /**
      * Stagger offset is sampled from uniform distribution U(0, WindowSize) when first event
      * ingested in the partitioned operator.
+     * 随机
      */
     RANDOM {
         @Override
@@ -48,7 +50,8 @@ public enum WindowStagger {
     /**
      * When the first event is received in the window operator, take the difference between the
      * start of the window and current procesing time as the offset. This way, windows are staggered
-     * based on when each parallel operator receives the first event.
+     * based on when each parallel operator receives the first event.、
+     * 手动
      */
     NATURAL {
         @Override

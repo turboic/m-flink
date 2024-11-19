@@ -567,6 +567,7 @@ public abstract class RestServerEndpoint implements RestService {
                                 + "Previously uploaded files are no longer available.",
                         uploadDir);
             }
+            //检查并且创建上传路径
             checkAndCreateUploadDir(uploadDir, log);
         }
     }
@@ -582,6 +583,8 @@ public abstract class RestServerEndpoint implements RestService {
      */
     private static synchronized void checkAndCreateUploadDir(final Path uploadDir, final Logger log)
             throws IOException {
+
+        //判断文件可写入
         if (Files.exists(uploadDir) && Files.isWritable(uploadDir)) {
             log.info("Using directory {} for file uploads.", uploadDir);
         } else if (Files.isWritable(Files.createDirectories(uploadDir))) {

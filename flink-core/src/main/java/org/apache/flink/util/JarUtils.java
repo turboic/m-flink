@@ -57,6 +57,7 @@ public class JarUtils {
         }
     }
 
+    //读取某个目录的文件jar
     public static List<URL> getJarFiles(final String[] jars) {
         if (jars == null) {
             return Collections.emptyList();

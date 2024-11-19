@@ -23,6 +23,8 @@ import java.nio.file.Path;
 /** Client uploading a file. */
 public final class FileUpload {
     private final Path file;
+
+    //使用Nio的Path
     private final String contentType;
 
     public FileUpload(Path file, String contentType) {

@@ -28,14 +28,16 @@ import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
-/** A client that is scoped to a specific job. */
+/** A client that is scoped to a specific job.
+ * job客户端*/
 @PublicEvolving
 public interface JobClient {
 
     /** Returns the {@link JobID} that uniquely identifies the job this client is scoped to. */
     JobID getJobID();
 
-    /** Requests the {@link JobStatus} of the associated job. */
+    /** Requests the {@link JobStatus} of the associated job.
+     * 获取job的状态*/
     CompletableFuture<JobStatus> getJobStatus();
 
     /** Cancels the associated job. */
