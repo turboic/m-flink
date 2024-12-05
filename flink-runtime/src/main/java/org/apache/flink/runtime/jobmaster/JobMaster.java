@@ -1312,6 +1312,7 @@ public class JobMaster extends FencedRpcEndpoint<JobMasterId>
         }
     }
 
+    //重新连接
     private void reconnectToResourceManager(Exception cause) {
         closeResourceManagerConnection(cause);
         tryConnectToResourceManager();
@@ -1392,9 +1393,12 @@ public class JobMaster extends FencedRpcEndpoint<JobMasterId>
         }
     }
 
+    //打印日志异常信息
     private void dissolveResourceManagerConnection(
             EstablishedResourceManagerConnection establishedResourceManagerConnection,
             Exception cause) {
+
+        // 获取资源ID
         final ResourceID resourceManagerResourceID =
                 establishedResourceManagerConnection.getResourceManagerResourceID();
 
@@ -1410,13 +1414,17 @@ public class JobMaster extends FencedRpcEndpoint<JobMasterId>
                     cause.getMessage());
         }
 
+        //移除监控
         resourceManagerHeartbeatManager.unmonitorTarget(resourceManagerResourceID);
 
         ResourceManagerGateway resourceManagerGateway =
                 establishedResourceManagerConnection.getResourceManagerGateway();
+
         resourceManagerGateway.disconnectJobManager(
                 executionPlan.getJobID(), schedulerNG.requestJobStatus(), cause);
+
         blocklistHandler.deregisterBlocklistListener(resourceManagerGateway);
+
         slotPoolService.disconnectResourceManager();
     }
 

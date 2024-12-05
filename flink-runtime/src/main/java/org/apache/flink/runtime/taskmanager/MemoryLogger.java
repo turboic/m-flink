@@ -63,21 +63,19 @@ public class MemoryLogger extends Thread {
     private volatile boolean running = true;
 
     public static void startIfConfigured(
-            Logger logger,
-            Configuration configuration,
-            CompletableFuture<Void> taskManagerTerminationFuture) {
+            Logger logger, // 日志
+            Configuration configuration, // 配置
+            CompletableFuture<Void> taskManagerTerminationFuture //任务终结
+    ) {
         if (!logger.isInfoEnabled() || !configuration.get(TaskManagerOptions.DEBUG_MEMORY_LOG)) {
             return;
         }
         logger.info("Starting periodic memory usage logger");
 
         new MemoryLogger(
-                        logger,
-                        configuration
-                                .get(TaskManagerOptions.DEBUG_MEMORY_USAGE_LOG_INTERVAL_MS)
-                                .toMillis(),
-                        taskManagerTerminationFuture)
-                .start();
+                logger,
+                configuration.get(TaskManagerOptions.DEBUG_MEMORY_USAGE_LOG_INTERVAL_MS).toMillis(),
+                taskManagerTerminationFuture).start();
     }
 
     /**
@@ -87,30 +85,33 @@ public class MemoryLogger extends Thread {
      * @param logger The logger to use for outputting the memory statistics.
      * @param interval The interval in which the thread logs.
      * @param monitored termination future for the system to whose life the thread is bound. The
-     *     thread terminates once the system terminates.
+     *         thread terminates once the system terminates.
      */
     public MemoryLogger(Logger logger, long interval, CompletableFuture<Void> monitored) {
         super("Memory Logger");
-        setDaemon(true);
-        setPriority(Thread.MIN_PRIORITY);
+        setDaemon(true); // 守护线程
+        setPriority(Thread.MIN_PRIORITY); // 优先级
 
         this.logger = logger;
         this.interval = interval;
         this.monitored = monitored;
 
+        // 内存
         this.memoryBean = ManagementFactory.getMemoryMXBean();
+        // 内存池
         this.poolBeans = ManagementFactory.getMemoryPoolMXBeans();
+        // 垃圾回收
         this.gcBeans = ManagementFactory.getGarbageCollectorMXBeans();
 
         // The direct buffer pool bean needs to be accessed via the bean server
         MBeanServer beanServer = ManagementFactory.getPlatformMBeanServer();
+
         BufferPoolMXBean directBufferBean = null;
         try {
-            directBufferBean =
-                    ManagementFactory.newPlatformMXBeanProxy(
-                            beanServer,
-                            "java.nio:type=BufferPool,name=direct",
-                            BufferPoolMXBean.class);
+            directBufferBean = ManagementFactory.newPlatformMXBeanProxy(
+                    beanServer,
+                    "java.nio:type=BufferPool,name=direct",
+                    BufferPoolMXBean.class);
         } catch (Exception e) {
             logger.warn("Failed to initialize direct buffer pool bean.", e);
         } finally {
@@ -169,7 +170,12 @@ public class MemoryLogger extends Thread {
         return String.format(
                 "Memory usage stats: [HEAP: %d/%d/%d MB, "
                         + "NON HEAP: %d/%d/%d MB (used/committed/max)]",
-                heapUsed, heapCommitted, heapMax, nonHeapUsed, nonHeapCommitted, nonHeapMax);
+                heapUsed,
+                heapCommitted,
+                heapMax,
+                nonHeapUsed,
+                nonHeapCommitted,
+                nonHeapMax);
     }
 
     /**
@@ -178,6 +184,7 @@ public class MemoryLogger extends Thread {
      * <p>These stats are not part of the other memory beans.
      *
      * @param bufferPoolMxBean The direct buffer pool bean or <code>null</code> if none available.
+     *
      * @return A string with the count, total capacity, and used direct memory.
      */
     public static String getDirectMemoryStatsAsString(BufferPoolMXBean bufferPoolMxBean) {
@@ -196,6 +203,7 @@ public class MemoryLogger extends Thread {
      * Gets the memory pool statistics from the JVM.
      *
      * @param poolBeans The collection of memory pool beans.
+     *
      * @return A string denoting the names and sizes of the memory pools.
      */
     public static String getMemoryPoolStatsAsString(List<MemoryPoolMXBean> poolBeans) {
@@ -227,13 +235,15 @@ public class MemoryLogger extends Thread {
      * Gets the garbage collection statistics from the JVM.
      *
      * @param gcMXBeans The collection of garbage collector beans.
+     *
      * @return A string denoting the number of times and total elapsed time in garbage collection.
      */
     public static String getGarbageCollectorStatsAsString(List<GarbageCollectorMXBean> gcMXBeans) {
         StringBuilder bld = new StringBuilder("Garbage collector stats: ");
 
         for (GarbageCollectorMXBean bean : gcMXBeans) {
-            bld.append('[')
+            bld
+                    .append('[')
                     .append(bean.getName())
                     .append(", GC TIME (ms): ")
                     .append(bean.getCollectionTime());

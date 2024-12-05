@@ -29,11 +29,14 @@ public final class ResourceID implements ResourceIDRetrievable, Serializable {
 
     private static final long serialVersionUID = 42L;
 
+    //资源id
     private final String resourceId;
 
+    //元数据
     private final String metadata;
 
     public ResourceID(String resourceId) {
+        //资源id
         this(resourceId, "");
     }
 

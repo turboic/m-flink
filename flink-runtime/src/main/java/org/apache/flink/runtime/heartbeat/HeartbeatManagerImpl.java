@@ -69,7 +69,7 @@ class HeartbeatManagerImpl<I, O> implements HeartbeatManager<I, O> {
 
     private final HeartbeatMonitor.Factory<O> heartbeatMonitorFactory;
 
-    /** Running state of the heartbeat manager. */
+    /** Running state of the heartbeat manager 心跳管理的运行状态. */
     protected volatile boolean stopped;
 
     public HeartbeatManagerImpl(
@@ -165,9 +165,11 @@ class HeartbeatManagerImpl<I, O> implements HeartbeatManager<I, O> {
     @Override
     public void unmonitorTarget(ResourceID resourceID) {
         if (!stopped) {
+            //从缓存中移除
             HeartbeatMonitor<O> heartbeatMonitor = heartbeatTargets.remove(resourceID);
 
             if (heartbeatMonitor != null) {
+                //自身执行退出
                 heartbeatMonitor.cancel();
             }
         }

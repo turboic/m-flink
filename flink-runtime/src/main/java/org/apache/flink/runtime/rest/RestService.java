@@ -25,7 +25,7 @@ public interface RestService extends AutoCloseableAsync {
 
     /**
      * Port of the running rest service.
-     * rest服务的端口
+     * rest服务的端口 rest请求服务
      * @return port of the rest service if running; otherwise -1
      */
     int getRestPort();

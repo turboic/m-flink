@@ -24,6 +24,8 @@ public interface TaskActions {
     /**
      * Fail the owning task with the given throwable.
      *
+     * 任务动作
+     *
      * @param cause of the failure
      */
     void failExternally(Throwable cause);

@@ -60,8 +60,7 @@ import java.util.concurrent.Executor;
  */
 public class CheckpointResourcesCleanupRunner implements JobManagerRunner {
 
-    private static final Logger LOG =
-            LoggerFactory.getLogger(CheckpointResourcesCleanupRunner.class);
+    private static final Logger LOG = LoggerFactory.getLogger(CheckpointResourcesCleanupRunner.class);
 
     private final JobResult jobResult;
     private final CheckpointRecoveryFactory checkpointRecoveryFactory;
@@ -82,6 +81,7 @@ public class CheckpointResourcesCleanupRunner implements JobManagerRunner {
             Configuration jobManagerConfiguration,
             Executor cleanupExecutor,
             long initializationTimestamp) {
+
         this.jobResult = Preconditions.checkNotNull(jobResult);
         this.checkpointRecoveryFactory = Preconditions.checkNotNull(checkpointRecoveryFactory);
         this.sharedStateRegistryFactory = Preconditions.checkNotNull(sharedStateRegistryFactory);
@@ -89,25 +89,21 @@ public class CheckpointResourcesCleanupRunner implements JobManagerRunner {
         this.cleanupExecutor = Preconditions.checkNotNull(cleanupExecutor);
         this.initializationTimestamp = initializationTimestamp;
 
-        this.checkpointsCleaner =
-                new CheckpointsCleaner(
-                        jobManagerConfiguration.get(CheckpointingOptions.CLEANER_PARALLEL_MODE));
+        this.checkpointsCleaner = new CheckpointsCleaner(jobManagerConfiguration.get(
+                CheckpointingOptions.CLEANER_PARALLEL_MODE));
 
         this.resultFuture = new CompletableFuture<>();
         this.cleanupFuture = resultFuture.thenCompose(ignored -> runCleanupAsync());
     }
 
     private CompletableFuture<Void> runCleanupAsync() {
-        return CompletableFuture.runAsync(
-                        () -> {
-                            try {
-                                cleanupCheckpoints();
-                            } catch (Exception e) {
-                                throw new CompletionException(e);
-                            }
-                        },
-                        cleanupExecutor)
-                .thenCompose(ignore -> checkpointsCleaner.closeAsync());
+        return CompletableFuture.runAsync(() -> {
+            try {
+                cleanupCheckpoints();
+            } catch (Exception e) {
+                throw new CompletionException(e);
+            }
+        }, cleanupExecutor).thenCompose(ignore -> checkpointsCleaner.closeAsync());
     }
 
     @Override
@@ -117,8 +113,8 @@ public class CheckpointResourcesCleanupRunner implements JobManagerRunner {
 
     @Override
     public void start() throws Exception {
-        resultFuture.complete(
-                JobManagerRunnerResult.forSuccess(createExecutionGraphInfoFromJobResult()));
+        resultFuture.complete(JobManagerRunnerResult.forSuccess(
+                createExecutionGraphInfoFromJobResult()));
     }
 
     private void cleanupCheckpoints() throws Exception {
@@ -144,10 +140,10 @@ public class CheckpointResourcesCleanupRunner implements JobManagerRunner {
     }
 
     private CompletedCheckpointStore createCompletedCheckpointStore() throws Exception {
-        return checkpointRecoveryFactory.createRecoveredCompletedCheckpointStore(
-                getJobID(),
+        return checkpointRecoveryFactory.createRecoveredCompletedCheckpointStore(getJobID(),
                 DefaultCompletedCheckpointStoreUtils.getMaximumNumberOfRetainedCheckpoints(
-                        jobManagerConfiguration, LOG),
+                        jobManagerConfiguration,
+                        LOG),
                 sharedStateRegistryFactory,
                 cleanupExecutor,
                 // Using RecoveryClaimMode.CLAIM to be able to discard shared state, if any.
@@ -162,9 +158,8 @@ public class CheckpointResourcesCleanupRunner implements JobManagerRunner {
 
     @Override
     public CompletableFuture<JobMasterGateway> getJobMasterGateway() {
-        return FutureUtils.completedExceptionally(
-                new UnavailableDispatcherOperationException(
-                        "Unable to get JobMasterGateway for job in cleanup phase. The requested operation is not available in that stage."));
+        return FutureUtils.completedExceptionally(new UnavailableDispatcherOperationException(
+                "Unable to get JobMasterGateway for job in cleanup phase. The requested operation is not available in that stage."));
     }
 
     @Override
@@ -179,8 +174,8 @@ public class CheckpointResourcesCleanupRunner implements JobManagerRunner {
 
     @Override
     public CompletableFuture<Acknowledge> cancel(Duration timeout) {
-        return FutureUtils.completedExceptionally(
-                new JobCancellationFailedException("Cleanup tasks are not meant to be cancelled."));
+        return FutureUtils.completedExceptionally(new JobCancellationFailedException(
+                "Cleanup tasks are not meant to be cancelled."));
     }
 
     @Override
@@ -190,11 +185,8 @@ public class CheckpointResourcesCleanupRunner implements JobManagerRunner {
 
     @Override
     public CompletableFuture<JobDetails> requestJobDetails(Duration timeout) {
-        return requestJob(timeout)
-                .thenApply(
-                        executionGraphInfo ->
-                                JobDetails.createDetailsForJob(
-                                        executionGraphInfo.getArchivedExecutionGraph()));
+        return requestJob(timeout).thenApply(executionGraphInfo -> JobDetails.createDetailsForJob(
+                executionGraphInfo.getArchivedExecutionGraph()));
     }
 
     @Override
@@ -221,14 +213,13 @@ public class CheckpointResourcesCleanupRunner implements JobManagerRunner {
 
     private static ExecutionGraphInfo generateExecutionGraphInfo(
             JobResult jobResult, long initializationTimestamp) {
-        return new ExecutionGraphInfo(
-                ArchivedExecutionGraph.createSparseArchivedExecutionGraph(
-                        jobResult.getJobId(),
-                        "unknown",
-                        getJobStatus(jobResult),
-                        null,
-                        jobResult.getSerializedThrowable().orElse(null),
-                        null,
-                        initializationTimestamp));
+        return new ExecutionGraphInfo(ArchivedExecutionGraph.createSparseArchivedExecutionGraph(
+                jobResult.getJobId(),
+                "unknown",
+                getJobStatus(jobResult),
+                null,
+                jobResult.getSerializedThrowable().orElse(null),
+                null,
+                initializationTimestamp));
     }
 }

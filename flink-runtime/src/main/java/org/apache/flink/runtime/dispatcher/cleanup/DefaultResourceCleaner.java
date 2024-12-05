@@ -92,7 +92,7 @@ public class DefaultResourceCleaner<T> implements ResourceCleaner {
      * {@code Builder} for creating {@code DefaultResourceCleaner} instances.
      *
      * @param <T> The functional interface that's being translated into the internally used {@link
-     *     CleanupFn}.
+     *         CleanupFn}.
      */
     public static class Builder<T> {
 
@@ -138,7 +138,8 @@ public class DefaultResourceCleaner<T> implements ResourceCleaner {
          *
          * @param label The label being used when logging errors in the given cleanup.
          * @param regularCleanup The cleanup callback that is going to run after all prioritized
-         *     cleanups are finished.
+         *         cleanups are finished.
+         *
          * @see #withPrioritizedCleanup(String, Object)
          */
         public Builder<T> withRegularCleanup(String label, T regularCleanup) {
@@ -178,54 +179,39 @@ public class DefaultResourceCleaner<T> implements ResourceCleaner {
 
         CompletableFuture<Void> cleanupFuture = FutureUtils.completedVoidFuture();
         for (CleanupWithLabel<T> cleanupWithLabel : prioritizedCleanup) {
-            cleanupFuture =
-                    cleanupFuture.thenCompose(
-                            ignoredValue ->
-                                    withRetry(
-                                            jobId,
-                                            cleanupWithLabel.getLabel(),
-                                            cleanupWithLabel.getCleanup()));
+            cleanupFuture = cleanupFuture.thenCompose(ignoredValue -> withRetry(
+                    jobId,
+                    cleanupWithLabel.getLabel(),
+                    cleanupWithLabel.getCleanup()));
         }
 
-        return cleanupFuture.thenCompose(
-                ignoredValue ->
-                        FutureUtils.completeAll(
-                                regularCleanup.stream()
-                                        .map(
-                                                cleanupWithLabel ->
-                                                        withRetry(
-                                                                jobId,
-                                                                cleanupWithLabel.getLabel(),
-                                                                cleanupWithLabel.getCleanup()))
-                                        .collect(Collectors.toList())));
+        return cleanupFuture.thenCompose(ignoredValue -> FutureUtils.completeAll(regularCleanup
+                .stream()
+                .map(cleanupWithLabel -> withRetry(
+                        jobId,
+                        cleanupWithLabel.getLabel(),
+                        cleanupWithLabel.getCleanup()))
+                .collect(Collectors.toList())));
     }
 
     private CompletableFuture<Void> withRetry(JobID jobId, String label, T cleanup) {
-        return FutureUtils.retryWithDelay(
-                () ->
-                        cleanupFn
-                                .cleanupAsync(cleanup, jobId, cleanupExecutor)
-                                .whenComplete(
-                                        (value, throwable) -> {
-                                            if (throwable != null) {
-                                                final String logMessage =
-                                                        String.format(
-                                                                "Cleanup of %s failed for job %s due to a %s: %s",
-                                                                label,
-                                                                jobId,
-                                                                throwable
-                                                                        .getClass()
-                                                                        .getSimpleName(),
-                                                                throwable.getMessage());
-                                                if (LOG.isTraceEnabled()) {
-                                                    LOG.warn(logMessage, throwable);
-                                                } else {
-                                                    LOG.warn(logMessage);
-                                                }
-                                            }
-                                        }),
-                retryStrategy,
-                mainThreadExecutor);
+        return FutureUtils.retryWithDelay(() -> cleanupFn
+                .cleanupAsync(cleanup, jobId, cleanupExecutor)
+                .whenComplete((value, throwable) -> {
+                    if (throwable != null) {
+                        final String logMessage = String.format(
+                                "Cleanup of %s failed for job %s due to a %s: %s",
+                                label,
+                                jobId,
+                                throwable.getClass().getSimpleName(),
+                                throwable.getMessage());
+                        if (LOG.isTraceEnabled()) {
+                            LOG.warn(logMessage, throwable);
+                        } else {
+                            LOG.warn(logMessage);
+                        }
+                    }
+                }), retryStrategy, mainThreadExecutor);
     }
 
     /**

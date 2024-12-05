@@ -30,6 +30,8 @@ import java.util.concurrent.CompletableFuture;
 /**
  * The gateway through which the {@link OperatorCoordinator} can send an event to an Operator on the
  * Task Manager side.
+ *
+ * 操作事件
  */
 public interface TaskExecutorOperatorEventGateway {
 

@@ -31,7 +31,7 @@ public interface TaskExecutorThreadInfoGateway {
 
     /**
      * Request a thread info sample from the given tasks.
-     *
+     * 线程信息
      * @param taskExecutionAttemptIds identifying the task to sample
      * @param requestParams parameters of the request
      * @param timeout of the request

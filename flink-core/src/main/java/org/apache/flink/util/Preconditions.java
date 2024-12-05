@@ -56,6 +56,7 @@ public final class Preconditions {
      */
     public static <T> T checkNotNull(@Nullable T reference) {
         if (reference == null) {
+            // 空指针
             throw new NullPointerException();
         }
         return reference;

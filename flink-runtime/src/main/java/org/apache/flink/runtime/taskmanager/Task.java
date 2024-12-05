@@ -1778,6 +1778,8 @@ public class Task
         private final TaskManagerActions taskManager;
 
         /** The timeout for cancellation. */
+
+        //退出操作超时时间
         private final long timeoutMillis;
 
         private final TaskInfo taskInfo;
@@ -1806,6 +1808,7 @@ public class Task
                 Deadline timeout = Deadline.fromNow(Duration.ofMillis(timeoutMillis));
                 while (executorThread.isAlive() && timeout.hasTimeLeft()) {
                     try {
+                        //退出线程等待执行线程，最多 millis 毫秒。如果目标线程在这个时间内没有结束，当前线程会继续执行。
                         executorThread.join(Math.max(1, timeout.timeLeft().toMillis()));
                     } catch (InterruptedException ignored) {
                         // we don't react to interrupted exceptions, simply fall through the loop
@@ -1822,6 +1825,8 @@ public class Task
                             "Task did not exit gracefully within "
                                     + (timeoutMillis / 1000)
                                     + " + seconds.";
+
+                    //通知消息内容  是个异常
                     taskManager.notifyFatalError(msg, new FlinkRuntimeException(msg));
                 }
             } catch (Throwable t) {
@@ -1847,6 +1852,7 @@ public class Task
     }
 
     /** Various operation of notify checkpoint. */
+    //退出、完成、挂起
     public enum NotifyCheckpointOperation {
         ABORT,
         COMPLETE,

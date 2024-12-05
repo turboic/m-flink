@@ -58,6 +58,8 @@ public final class HeartbeatServicesImpl implements HeartbeatServices {
         this.failedRpcRequestsUntilUnreachable = failedRpcRequestsUntilUnreachable;
     }
 
+    //通过HeartbeatManager操作行为
+
     @Override
     public <I, O> HeartbeatManager<I, O> createHeartbeatManager(
             ResourceID resourceId,

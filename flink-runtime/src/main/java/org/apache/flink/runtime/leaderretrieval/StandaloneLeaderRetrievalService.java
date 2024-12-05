@@ -77,6 +77,7 @@ public class StandaloneLeaderRetrievalService implements LeaderRetrievalService 
         checkNotNull(listener, "Listener must not be null.");
 
         synchronized (startStopLock) {
+            //对象锁
             checkState(!started, "StandaloneLeaderRetrievalService can only be started once.");
             started = true;
 

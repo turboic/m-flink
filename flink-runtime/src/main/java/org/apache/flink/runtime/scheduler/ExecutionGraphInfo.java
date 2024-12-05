@@ -35,6 +35,8 @@ public class ExecutionGraphInfo implements Serializable {
     private static final long serialVersionUID = -6134203195124124202L;
 
     private final ArchivedExecutionGraph executionGraph;
+
+    // 异常历史
     private final Iterable<RootExceptionHistoryEntry> exceptionHistory;
 
     public ExecutionGraphInfo(ArchivedExecutionGraph executionGraph) {

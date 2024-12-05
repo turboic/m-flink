@@ -154,6 +154,7 @@ public class DefaultHeartbeatMonitor<O> implements HeartbeatMonitor<O>, Runnable
     @Override
     public void run() {
         // The heartbeat has timed out if we're in state running
+        // 如果state是RUNING，那么状态改为TIMEOUT
         if (state.compareAndSet(State.RUNNING, State.TIMEOUT)) {
             heartbeatListener.notifyHeartbeatTimeout(resourceID);
         }
